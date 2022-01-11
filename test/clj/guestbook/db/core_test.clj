@@ -7,6 +7,7 @@
   [next.jdbc :as jdbc]
   [guestbook.config :refer [env]]
   [mount.core :as mount]))
+
 (use-fixtures
   :once
   (fn [f]
@@ -15,6 +16,7 @@
       #'guestbook.db.core/*db*)
     (migrations/migrate ["migrate"] (select-keys env [:database-url]))
     (f)))
+
 (deftest test-messages
   (jdbc/with-transaction [t-conn *db* {:rollback-only true}]
     (is (= 1 (db/save-message!
