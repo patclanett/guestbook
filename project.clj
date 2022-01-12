@@ -30,17 +30,36 @@
                  [ring-webjars "0.2.0"]
                  [ring/ring-core "1.8.2"]
                  [ring/ring-defaults "0.3.2"]
-                 [selmer "1.12.31"]]
+                 [selmer "1.12.31"]
+                 [org.clojure/clojurescript "1.10.764" :scope "provided"]]
 
   :min-lein-version "2.0.0"
 
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
-  :resource-paths ["resources"]
+  
+  :resource-paths ["resources" "target/cljsbuild"] ;; specifies the path to static assets
   :target-path "target/%s/"
-  :main ^:skip-aot guestbook.core
+  :main ^:skip-aot guestbook.core ;;used by compiler to find the entry point for compiled app
 
-  :plugins []
+  :plugins [[lein-cljsbuild "1.1.8"]]
+
+  :cljsbuild
+  {:builds
+   {:app {:source-paths ["src/cljs"] ;;specifies where to save cljs source files
+          :compiler {:output-to "target/cljsbuild/public/js/app.js" ;;outputs name of resulting js file
+                     :output-dir "target/cljsbuild/public/js/out" ;; specifies where the temporary js files will be generated
+                     :main "guestbook.core"
+                     :asset-path "/js/out" ;; used to specify where to look for supporting js assets
+                     :optimizations :none
+                     :source-map true ;; used to map from the compiled js to the original cljs source
+                     :pretty-print true}}}}
+
+  :clean-targets ;;tells lein we'd like to delete any js in the "target/cljsbuild" when lein clean is run
+  ^{:protect false}
+  [:target-path
+   [:cljsbuild :builds :app :compiler :output-dir]
+   [:cljsbuild :builds :app :compiler :output-to]]
 
   :profiles
   {:uberjar {:omit-source true
